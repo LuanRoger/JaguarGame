@@ -2,5 +2,5 @@
 
 public interface IMove
 {
-    
+    public PlaceRef newPoss { get; init; }
 }

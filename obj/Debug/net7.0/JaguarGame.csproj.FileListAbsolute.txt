@@ -1,0 +1,15 @@
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\bin\Debug\net7.0\JaguarGame.exe
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\bin\Debug\net7.0\JaguarGame.deps.json
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\bin\Debug\net7.0\JaguarGame.runtimeconfig.json
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\bin\Debug\net7.0\JaguarGame.dll
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\bin\Debug\net7.0\JaguarGame.pdb
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\JaguarGame.csproj.AssemblyReference.cache
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\JaguarGame.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\JaguarGame.AssemblyInfoInputs.cache
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\JaguarGame.AssemblyInfo.cs
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\JaguarGame.csproj.CoreCompileInputs.cache
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\JaguarGame.dll
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\refint\JaguarGame.dll
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\JaguarGame.pdb
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\JaguarGame.genruntimeconfig.cache
+C:\Users\luanr\Documents\Jobs\c_sharp\JaguarGame\obj\Debug\net7.0\ref\JaguarGame.dll
