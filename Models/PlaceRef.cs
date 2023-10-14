@@ -1,11 +1,8 @@
 ﻿namespace JaguarGame.Models;
 
-public struct PlaceRef : IEquatable<PlaceRef>
+public readonly struct PlaceRef : IEquatable<PlaceRef>
 {
-    public override int GetHashCode()
-    {
-        return id;
-    }
+    public override int GetHashCode() => id;
 
     public int id { get; init; }
     

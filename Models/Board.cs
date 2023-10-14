@@ -1,10 +1,12 @@
-﻿namespace JaguarGame.Models;
+﻿using System.Text;
+
+namespace JaguarGame.Models;
 
 public class Board : ICloneable
 {
-    public List<Place> places { get; set; }
+    public List<Place> places { get; }
     public PlaceRef jagPoss { get; private set; }
-    public PlaceRef[] dogsPoss { get; private set; }
+    public List<PlaceRef> dogsPoss { get; }
 
     public Board()
     {
@@ -89,10 +91,10 @@ public class Board : ICloneable
             place25
         };
         jagPoss = place13;
-        dogsPoss = new PlaceRef[]{place1, place2, place3, place4, place5, place6, place7,
-            place8, place9, place10, place11, place12, place14, place5};
+        dogsPoss = new() {place17, place2, place3, place4, place5, place6, place7,
+            place8, place9, place10, place11, place12, place14, place15};
     }
-    public Board(PlaceRef jagPoss, PlaceRef[] dogsPoss)
+    public Board(PlaceRef jagPoss, List<PlaceRef> dogsPoss)
     {
         Place place1 = new(1);
         Place place2 = new(2);
@@ -178,7 +180,7 @@ public class Board : ICloneable
         this.dogsPoss = dogsPoss;
     }
     
-    public int GetDogIndexByPoss(PlaceRef poss) => Array.IndexOf(dogsPoss, poss);
+    private int GetDogIndexByPoss(PlaceRef poss) => dogsPoss.IndexOf(poss);
     public IEnumerable<JaguarMove> GetPossibleMovesToJaguar()
     {
         List<JaguarMove> possibleMoves = new();
@@ -195,10 +197,12 @@ public class Board : ICloneable
         {
             int possDifAbs = Math.Abs(jagPoss.id - possibleEatDogPoss.id);
             bool dogIsBeforeJag = jagPoss.id > possibleEatDogPoss.id;
-            int futureJagPoss = dogIsBeforeJag ? jagPoss.id - possDifAbs : jagPoss.id + possDifAbs;
+            int futureJagPoss = dogIsBeforeJag ? possibleEatDogPoss.id - possDifAbs : possibleEatDogPoss.id + possDifAbs;
             
-            PlaceRef futureJaguar = places[futureJagPoss];
-            if(!IsValidToGoTo(futureJaguar, jagPoss)) continue;
+            int placeIndex = futureJagPoss - 1;
+            if(placeIndex is < 0 or > 24) continue;
+            PlaceRef futureJaguar = places[placeIndex];
+            if(!IsValidToGoTo(futureJaguar, jagPoss, true)) continue;
 
             int deathDogIndex = GetDogIndexByPoss(possibleEatDogPoss);
             possibleMoves.Add(new()
@@ -217,11 +221,14 @@ public class Board : ICloneable
         List<DogMove> possibleMoves = new();
         foreach (PlaceRef dogPoss in dogsPoss)
         {
-            var dogMoves = places.Find(place => place.@ref == dogPoss)!.connections
+            int index = dogIndex;
+            Place? dogPlaceMove = places.Find(place => place.@ref == dogPoss);
+            if(dogPlaceMove is null) continue;
+            var dogMoves = dogPlaceMove.connections
                 .Where(place => IsValidToGoTo(place, dogPoss))
                 .Select(place => new DogMove
                 {
-                    dogIndex = dogIndex,
+                    dogIndex = index,
                     newPoss = place
                 })
                 .ToList();
@@ -232,12 +239,13 @@ public class Board : ICloneable
         return possibleMoves;
     }
     
-    private bool IsValidToGoTo(PlaceRef place, PlaceRef currentPoss)
+    private bool IsValidToGoTo(PlaceRef place, PlaceRef currentPoss, bool isFatalMove = false)
     {
         bool isEmptyToGo = place != jagPoss && !dogsPoss.Contains(place);
-        bool isAdjacent = places.Find(p => p.@ref == currentPoss)!.connections.Contains(place);
+        bool isAdjacent = places.Find(p => p.@ref == currentPoss)?.connections
+            .Contains(place) ?? false;
         
-        return isEmptyToGo && isAdjacent;
+        return isEmptyToGo && (isAdjacent || isFatalMove);
     }
     private IEnumerable<PlaceRef> GetDogsAdjacentToJaguar() =>
         places.Find(place => place.@ref == jagPoss)!.connections
@@ -261,7 +269,7 @@ public class Board : ICloneable
         if(!IsValidToGoTo(move.newPoss, jagPoss)) return;
         
         if(move is { isFatal: true, killDogOnBoardIndex: not null })
-            dogsPoss[move.killDogOnBoardIndex.Value] = default;
+            dogsPoss.RemoveAt(move.killDogOnBoardIndex.Value);
         
         jagPoss = move.newPoss;
     }
@@ -273,24 +281,41 @@ public class Board : ICloneable
         dogsPoss[move.dogIndex] = move.newPoss;
     }
     
-    public bool IsGameOver(out int winner)
+    public bool IsGameOver()
     {
         bool dogsWin = !GetPossibleMovesToJaguar().Any();
         bool jaguarWin = dogsPoss.Count(p => p == default) == 6;
-        if(dogsWin)
-            winner = -1;
-        else if(jaguarWin)
-            winner = 1;
-        else
-            winner = 0;
         
         return dogsWin || jaguarWin;
     }
-    public int? GetScore()
+    public float GetStateScore()
     {
-        if(!IsGameOver(out int winner)) return null;
+        float stateSocre = 0;
         
-        return winner;
+        //Pontuação do jaguar
+        int freeSpacesToGo = GetPossibleMovesToJaguar().Count();
+        float dogsLived = 2f / dogsPoss.Count;
+        stateSocre += dogsLived + freeSpacesToGo;
+        
+        //Pontuação dos cachorros
+        int dogsAdjacentToJaguar = -GetDogsAdjacentToJaguar().Count();
+        stateSocre += dogsAdjacentToJaguar;
+        
+        return stateSocre;
+    }
+    
+    public void PrintBoard()
+    {
+        Console.WriteLine("Jaguar: " + jagPoss.id);
+        int dogIndex = 0;
+        StringBuilder sb = new();
+        foreach (PlaceRef dogPlace in dogsPoss)
+        {
+            sb.Append($"Dog {dogIndex}: {dogPlace.id} ");
+            dogIndex++;
+        }
+        Console.WriteLine(sb.ToString());
+        Console.WriteLine("State value: " + $"{GetStateScore():0.00}");
     }
     
     public object Clone() => new Board(jagPoss, dogsPoss);
