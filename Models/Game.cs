@@ -1,4 +1,6 @@
-﻿namespace JaguarGame.Models;
+﻿using JaguarGame.Models.Enums;
+
+namespace JaguarGame.Models;
 
 public class Game
 {
@@ -15,14 +17,31 @@ public class Game
     
     public void Start()
     {
-        transpositionTable = new();
+        const int maxDepth = 5;
         Board board = new();
-        float d = MinMax(board, int.MinValue, int.MaxValue, true, 100);
-        Console.WriteLine(d);
+        Winner? winner;
+        int round = 0;
+        while (!board.IsGameOver(out winner))
+        {
+            Board boardClone = (Board)board.Clone();
+            float maxPlayerScore = MinMax(boardClone, int.MinValue, int.MaxValue, out IMove? maxPlayerMove, true, maxDepth);
+            Console.WriteLine($"Max player get a branch with score: {maxPlayerScore}");
+            boardClone.Move(maxPlayerMove!);
+            
+            float minPlayerScore = MinMax(boardClone, int.MinValue, int.MaxValue, out IMove? minPlayerMove, false, maxDepth);
+            Console.WriteLine($"Min player get a branch with score: {minPlayerScore}");
+            boardClone.Move(minPlayerMove!);
+            
+            round++;
+            board = boardClone;
+        }
+        
+        Console.WriteLine("The winner is: " + winner);
     }
-    private float MinMax(Board board, float alpha, float beta, bool maxPlayer, int depth)
+    private float MinMax(Board board, float alpha, float beta, out IMove? move, bool maxPlayer, int depth, bool getFromActualMoveSet = true)
     {
-        if(depth == 0 || board.IsGameOver())
+        move = null;
+        if(depth == 0 || board.IsGameOver(out _))
             return board.GetStateScore();
         
         if(maxPlayer)
@@ -31,10 +50,15 @@ public class Game
             var possibleMoves = board.GetPossibleMovesToJaguar();
             foreach (JaguarMove jaguarMove in possibleMoves)
             {
-                board.Move(jaguarMove);
+                Board boardClone = (Board)board.Clone();
+                boardClone.Move(jaguarMove);
                 Console.WriteLine("Analizando movimiento: ");
-                board.PrintBoard();
-                score = Math.Max(score, MinMax(board, alpha, beta, false, depth - 1));
+                boardClone.PrintBoard();
+                float moveScore = Math.Max(score, MinMax(boardClone, alpha, beta, out _,
+                    false, depth - 1, false));
+                if(getFromActualMoveSet && moveScore > score)
+                    move = jaguarMove;
+                score = moveScore;
                 if(score > beta)
                     break;
                 alpha = alpha > score ? alpha : score;
@@ -48,11 +72,16 @@ public class Game
             var possibleMoves = board.GetPossibleMovesToDogs();
             foreach (DogMove dogMove in possibleMoves)
             {
-                board.Move(dogMove);
+                Board boardClone = (Board)board.Clone();
+                boardClone.Move(dogMove);
                 Console.WriteLine("Analizando movimiento: ");
-                board.PrintBoard();
+                boardClone.PrintBoard();
                 Console.WriteLine("Depth: " + depth);
-                score = Math.Min(score, MinMax(board, alpha, beta, true, depth - 1));
+                float moveScore = Math.Min(score, MinMax(boardClone, alpha, beta, out _,
+                    true, depth - 1, false));
+                if(getFromActualMoveSet && moveScore < score)
+                    move = dogMove;
+                score = moveScore;
                 if(score < alpha)
                     break;
                 beta = beta < score ? beta : score;
