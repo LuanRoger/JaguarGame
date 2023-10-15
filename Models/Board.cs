@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using JaguarGame.Models.Enums;
 
 namespace JaguarGame.Models;
 
@@ -35,6 +36,12 @@ public class Board : ICloneable
         Place place23 = new(23);
         Place place24 = new(24);
         Place place25 = new(25);
+        Place place26 = new(26);
+        Place place27 = new(27);
+        Place place28 = new(28);
+        Place place29 = new(29);
+        Place place30 = new(30);
+        Place place31 = new(31);
         
         place1.Connect(new PlaceRef[]{place2, place6, place7});
         place2.Connect(new PlaceRef[]{place1, place3, place7});
@@ -58,9 +65,19 @@ public class Board : ICloneable
         place20.Connect(new PlaceRef[]{place15, place19, place25});
         place21.Connect(new PlaceRef[]{place16, place17, place22});
         place22.Connect(new PlaceRef[]{place17, place21, place23});
-        place23.Connect(new PlaceRef[]{place17, place18, place19, place22, place24});
+        place23.Connect(new PlaceRef[]
+        {
+            place17, place18, place19, place22, place24,
+            place26, place27, place28
+        });
         place24.Connect(new PlaceRef[]{place19, place23, place25});
         place25.Connect(new PlaceRef[]{place19, place18, place24});
+        place26.Connect(new PlaceRef[]{place23, place27, place29});
+        place27.Connect(new PlaceRef[]{place23, place26, place28, place30});
+        place28.Connect(new PlaceRef[]{place23, place27, place31});
+        place29.Connect(new PlaceRef[]{place26, place30});
+        place30.Connect(new PlaceRef[]{place27, place29, place31});
+        place31.Connect(new PlaceRef[]{place28, place30});
         
         places = new()
         {
@@ -88,10 +105,16 @@ public class Board : ICloneable
             place22,
             place23,
             place24,
-            place25
+            place25,
+            place26,
+            place27,
+            place28,
+            place29,
+            place30,
+            place31
         };
         jagPoss = place13;
-        dogsPoss = new() {place17, place2, place3, place4, place5, place6, place7,
+        dogsPoss = new() {place1, place2, place3, place4, place5, place6, place7,
             place8, place9, place10, place11, place12, place14, place15};
     }
     public Board(PlaceRef jagPoss, List<PlaceRef> dogsPoss)
@@ -121,6 +144,12 @@ public class Board : ICloneable
         Place place23 = new(23);
         Place place24 = new(24);
         Place place25 = new(25);
+        Place place26 = new(26);
+        Place place27 = new(27);
+        Place place28 = new(28);
+        Place place29 = new(29);
+        Place place30 = new(30);
+        Place place31 = new(31);
         
         place1.Connect(new PlaceRef[]{place2, place6, place7});
         place2.Connect(new PlaceRef[]{place1, place3, place7});
@@ -144,9 +173,19 @@ public class Board : ICloneable
         place20.Connect(new PlaceRef[]{place15, place19, place25});
         place21.Connect(new PlaceRef[]{place16, place17, place22});
         place22.Connect(new PlaceRef[]{place17, place21, place23});
-        place23.Connect(new PlaceRef[]{place17, place18, place19, place22, place24});
+        place23.Connect(new PlaceRef[]
+        {
+            place17, place18, place19, place22, place24,
+            place26, place27, place28
+        });
         place24.Connect(new PlaceRef[]{place19, place23, place25});
         place25.Connect(new PlaceRef[]{place19, place18, place24});
+        place26.Connect(new PlaceRef[]{place23, place27, place29});
+        place27.Connect(new PlaceRef[]{place23, place26, place28, place30});
+        place28.Connect(new PlaceRef[]{place23, place27, place31});
+        place29.Connect(new PlaceRef[]{place26, place30});
+        place30.Connect(new PlaceRef[]{place27, place29, place31});
+        place31.Connect(new PlaceRef[]{place28, place30});
         
         places = new()
         {
@@ -174,7 +213,13 @@ public class Board : ICloneable
             place22,
             place23,
             place24,
-            place25
+            place25,
+            place26,
+            place27,
+            place28,
+            place29,
+            place30,
+            place31
         };
         this.jagPoss = jagPoss;
         this.dogsPoss = dogsPoss;
@@ -266,7 +311,7 @@ public class Board : ICloneable
     }
     private void MoveJaguar(JaguarMove move)
     {
-        if(!IsValidToGoTo(move.newPoss, jagPoss)) return;
+        if(!IsValidToGoTo(move.newPoss, jagPoss, move.isFatal)) return;
         
         if(move is { isFatal: true, killDogOnBoardIndex: not null })
             dogsPoss.RemoveAt(move.killDogOnBoardIndex.Value);
@@ -281,10 +326,11 @@ public class Board : ICloneable
         dogsPoss[move.dogIndex] = move.newPoss;
     }
     
-    public bool IsGameOver()
+    public bool IsGameOver(out Winner? winner)
     {
         bool dogsWin = !GetPossibleMovesToJaguar().Any();
-        bool jaguarWin = dogsPoss.Count(p => p == default) == 6;
+        bool jaguarWin = dogsPoss.Count <= 6;
+        winner = dogsWin ? Winner.DogWinner : jaguarWin ? Winner.JaguarWinner : null;
         
         return dogsWin || jaguarWin;
     }
@@ -292,10 +338,10 @@ public class Board : ICloneable
     {
         float stateSocre = 0;
         
-        //Pontuação do jaguar
-        int freeSpacesToGo = GetPossibleMovesToJaguar().Count();
-        float dogsLived = 2f / dogsPoss.Count;
-        stateSocre += dogsLived + freeSpacesToGo;
+        //Pontuação da onça
+        //int freeSpacesToGo = GetPossibleMovesToJaguar().Count();
+        float dogsLived = 14f * 2.5f / dogsPoss.Count;
+        stateSocre += dogsLived;
         
         //Pontuação dos cachorros
         int dogsAdjacentToJaguar = -GetDogsAdjacentToJaguar().Count();
@@ -318,5 +364,13 @@ public class Board : ICloneable
         Console.WriteLine("State value: " + $"{GetStateScore():0.00}");
     }
     
-    public object Clone() => new Board(jagPoss, dogsPoss);
+    public object Clone()
+    {
+        PlaceRef jagPossClone = (PlaceRef)jagPoss.Clone();
+        var dogsPossClone = dogsPoss
+            .Select(dogPoss => (PlaceRef)dogPoss.Clone())
+            .ToList();
+        
+        return new Board(jagPossClone, dogsPossClone);
+    }
 }
