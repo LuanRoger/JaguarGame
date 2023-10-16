@@ -6,13 +6,11 @@ public class Game
 {
     public Player jaguar { get; }
     public Player dogs { get; }
-    private TranspositionTable transpositionTable;
 
     public Game()
     {
         jaguar = new("Jaguar");
         dogs = new("Dogs");
-        transpositionTable = new();
     }
     
     public void Start()
