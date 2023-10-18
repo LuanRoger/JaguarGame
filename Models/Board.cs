@@ -1,5 +1,4 @@
-﻿using System.Text;
-using JaguarGame.Models.Enums;
+﻿using JaguarGame.Models.Enums;
 
 namespace JaguarGame.Models;
 
@@ -226,7 +225,7 @@ public class Board : ICloneable
     }
     
     private int GetDogIndexByPoss(PlaceRef poss) => dogsPoss.IndexOf(poss);
-    public IEnumerable<JaguarMove> GetPossibleMovesToJaguar()
+    public IEnumerable<JaguarMove> GetPossibleMovesToJaguar(bool includeFatals = true)
     {
         List<JaguarMove> possibleMoves = new();
         var freePoss = places.Find(place => place.@ref == jagPoss)!.connections
@@ -237,6 +236,9 @@ public class Board : ICloneable
                 newPoss = freePlace
             })
             .ToList();
+        possibleMoves.AddRange(freePoss);
+        if(!includeFatals) return possibleMoves;
+        
         var possibleEats = GetDogsAdjacentToJaguar();
         foreach (PlaceRef possibleEatDogPoss in possibleEats)
         {
@@ -257,7 +259,6 @@ public class Board : ICloneable
             });
         }
         
-        possibleMoves.AddRange(freePoss);
         return possibleMoves;
     }
     public IEnumerable<DogMove> GetPossibleMovesToDogs()
@@ -328,7 +329,7 @@ public class Board : ICloneable
     
     public bool IsGameOver(out Winner? winner)
     {
-        bool dogsWin = !GetPossibleMovesToJaguar().Any();
+        bool dogsWin = !GetPossibleMovesToJaguar(false).Any();
         bool jaguarWin = dogsPoss.Count <= 6;
         winner = dogsWin ? Winner.DogWinner : jaguarWin ? Winner.JaguarWinner : null;
         
@@ -339,29 +340,22 @@ public class Board : ICloneable
         float stateSocre = 0;
         
         //Pontuação da onça
-        //int freeSpacesToGo = GetPossibleMovesToJaguar().Count();
-        float dogsLived = 14f * 2.5f / dogsPoss.Count;
-        stateSocre += dogsLived;
+        float freeSpacesToGo = GetPossibleMovesToJaguar().Count() / 3f;
+        float dogsLived = 14f * 3 / dogsPoss.Count;
+        stateSocre += dogsLived + freeSpacesToGo;
         
         //Pontuação dos cachorros
-        int dogsAdjacentToJaguar = -GetDogsAdjacentToJaguar().Count();
-        stateSocre += dogsAdjacentToJaguar;
+        float possibleMoves = -GetPossibleMovesToDogs().Count() / 2f;
+        float possiblePeacefulMoves = 3f / -GetPossibleMovesToJaguar(false).Count();
+        float dogsAdjacentToJaguar = -GetDogsAdjacentToJaguar().Count();
+        stateSocre += possibleMoves + dogsAdjacentToJaguar + possiblePeacefulMoves;
+        
+        Random rng = new();
+        bool hasSignal = rng.Next(0, 2) == 1;
+        float rngFactor = rng.Next(0, 10) / 10f;
+        stateSocre += hasSignal ? -rngFactor : rngFactor;
         
         return stateSocre;
-    }
-    
-    public void PrintBoard()
-    {
-        Console.WriteLine("Jaguar: " + jagPoss.id);
-        int dogIndex = 0;
-        StringBuilder sb = new();
-        foreach (PlaceRef dogPlace in dogsPoss)
-        {
-            sb.Append($"Dog {dogIndex}: {dogPlace.id} ");
-            dogIndex++;
-        }
-        Console.WriteLine(sb.ToString());
-        Console.WriteLine("State value: " + $"{GetStateScore():0.00}");
     }
     
     public object Clone()
