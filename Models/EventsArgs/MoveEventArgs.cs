@@ -1,4 +1,6 @@
-﻿namespace JaguarGame.Models.EventsArgs;
+﻿using JaguarGame.Models.Interfaces;
+
+namespace JaguarGame.Models.EventsArgs;
 
 public class MoveEventArgs : EventArgs
 {

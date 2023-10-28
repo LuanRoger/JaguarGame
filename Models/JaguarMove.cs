@@ -1,4 +1,6 @@
-﻿namespace JaguarGame.Models;
+﻿using JaguarGame.Models.Interfaces;
+
+namespace JaguarGame.Models;
 
 public struct JaguarMove : IMove
 {

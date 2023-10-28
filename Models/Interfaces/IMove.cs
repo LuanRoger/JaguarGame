@@ -1,4 +1,4 @@
-﻿namespace JaguarGame.Models;
+﻿namespace JaguarGame.Models.Interfaces;
 
 public interface IMove
 {
