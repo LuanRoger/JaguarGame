@@ -158,7 +158,19 @@ public class Board : ICloneable
     
     public object Clone()
     {
-        BoardDefinition boardDefinitionClone = (BoardDefinition)boardDefinition.Clone();
+        var boardPlacesClone = places
+            .Select(place => (Place)place.Clone())
+            .ToList();
+        PlaceRef jagPossClone = (PlaceRef)jagPoss.Clone();
+        var dogsPossClone = dogsPoss
+            .Select(dogPoss => (PlaceRef)dogPoss.Clone())
+            .ToList();
+        BoardDefinition boardDefinitionClone = new()
+        {
+            boardPlaces = boardPlacesClone,
+            jaguarPossition = jagPossClone,
+            dogsPossitions = dogsPossClone
+        };
         
         return new Board(boardDefinitionClone);
     }

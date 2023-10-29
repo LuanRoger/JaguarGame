@@ -1,6 +1,7 @@
-using JaguarGame;
+﻿using JaguarGame;
 using JaguarGame.BoardDefinitions;
 using JaguarGame.BoardDefinitions.Definitions;
+using JaguarGame.BoardRenderer;
 using JaguarGame.Models;
 using JaguarGame.Models.EventsArgs;
 using Spectre.Console;
@@ -16,7 +17,7 @@ string dogsPlayerName = AnsiConsole.Ask<string>("Digite o nome do jogador que se
 
 Game game = new(new(jaguarPlauyerName), new(dogsPlayerName), new AdugoBoard());
 
-var mainLayout = new Layout("Root")
+Layout mainLayout = new Layout("Root")
     .SplitColumns(
         new Layout("Preview"),
         new Layout("Infos")
