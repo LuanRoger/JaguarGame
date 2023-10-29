@@ -1,4 +1,4 @@
-﻿using JaguarGame.Models;
+using JaguarGame.Models;
 
 namespace JaguarGame.BoardDefinitions.Definitions;
 

@@ -1,4 +1,4 @@
-﻿using JaguarGame;
+using JaguarGame;
 using JaguarGame.BoardDefinitions;
 using JaguarGame.BoardDefinitions.Definitions;
 using JaguarGame.Models;
@@ -38,6 +38,7 @@ AnsiConsole.Live(mainLayout)
         void UpdateEventsOnMove(object sender, MoveEventArgs eventArgs)
         {
             const string moveTextFormat = "{0} foi para {1} ({2})";
+            AdugoBoardRenderer boardRenderer = new(5, 5);
             mainLayout["Eventos"].Update(new Panel(
                 new Markup(string.Format(moveTextFormat, 
                     eventArgs.player.name, eventArgs.move.newPoss.id, eventArgs.moveScore)))
@@ -45,7 +46,7 @@ AnsiConsole.Live(mainLayout)
             mainLayout["Preview"].Update(
                 new Panel(
                     new Align(
-                        GenerateTableByBoard(eventArgs.boardAfterMove, 5, 7), 
+                        boardRenderer.Render(eventArgs.boardAfterMove),
                         HorizontalAlignment.Center, VerticalAlignment.Middle)));
             ctx.Refresh();
         }
@@ -83,64 +84,3 @@ AnsiConsole.Live(mainLayout)
     });
 
 AnsiConsole.Write(mainLayout);
-
-Table GenerateTableByBoard(Board board, int boardDimensionX, int boardDimensionY)
-{
-    Table table = new Table()
-        .Border(TableBorder.MinimalHeavyHead)
-        .Centered();
-    boardDimensionX++;
-    boardDimensionY++;
-    
-    for (int column = 0; column < boardDimensionX; column++)
-        if(column == 0)
-            table.AddColumn("X");
-        else table.AddColumn(new(column.ToString()));
-    
-    PlaceRef jagPoss = board.jagPoss;
-    var dogsPoss = board.dogsPoss;
-    List<IRenderable> rowCells = new();
-    int row = 1;
-    int possitionOffset = 0;
-    bool jumpRedirect = false;
-    for (int rowIndex = 1; rowIndex < boardDimensionX * boardDimensionY; rowIndex++)
-    {
-        if(rowIndex % boardDimensionX == 1)
-            rowCells.Add(new Markup(row.ToString()));
-        if(rowIndex % boardDimensionX == 0)
-        {
-            table.AddRow(rowCells);
-            rowCells.Clear();
-            row++;
-            possitionOffset++;
-            continue;
-        }
-        
-        int entitiesPoss = rowIndex - possitionOffset;
-        if(row == 6 && !jumpRedirect)
-        {
-            switch (entitiesPoss)
-            {
-                case 26:
-                    rowCells.Add(new Markup("->"));
-                    possitionOffset++;
-                    jumpRedirect = true;
-                    continue;
-                case 29:
-                    rowCells.Add(new Markup("<-"));
-                    possitionOffset--;
-                    jumpRedirect = true;
-                    continue;
-            }
-        }
-        jumpRedirect = false;
-
-        if(jagPoss.id == entitiesPoss)
-            rowCells.Add(new Markup("J"));
-        else if(dogsPoss.Any(dog => dog.id == entitiesPoss))
-            rowCells.Add(new Markup("D"));
-        else rowCells.Add(new Markup(" "));
-    }
-    
-    return table;
-}
