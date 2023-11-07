@@ -1,6 +1,5 @@
 ﻿using JaguarGame.BoardRenderer;
 using JaguarGame.Models.EventsArgs;
-using JaguarGame.Models.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 

@@ -1,6 +1,4 @@
-﻿using JaguarGame.Models.Interfaces;
-
-namespace JaguarGame.Models.EventsArgs;
+﻿namespace JaguarGame.Models.EventsArgs;
 
 public class StartRoundEventArgs : EventArgs
 {

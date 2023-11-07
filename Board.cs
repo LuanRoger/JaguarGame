@@ -133,11 +133,9 @@ public class Board : ICloneable
     }
     public float GetStateScore()
     {
-        float stateSocre;
-        
         //Pontuação da onça
         float freeSpacesToGo = GetPossibleMovesToJaguar().Count() / 4f;
-        float dogsLived = 14f * 3 / dogsPoss.Count;
+        float dogsLived = 14f * 5 / dogsPoss.Count;
         float jaguarScore = freeSpacesToGo * dogsLived;
         
         //Pontuação dos cachorros
@@ -145,14 +143,13 @@ public class Board : ICloneable
         float possiblePeacefulMoves = 4f / GetPossibleMovesToJaguar(false).Count();
         float dogsAdjacentToJaguar = GetDogsAdjacentToJaguar().Count();
         float dogsScore = -(possibleMoves + dogsAdjacentToJaguar + possiblePeacefulMoves);
-        stateSocre = jaguarScore + dogsScore;
         
+        float stateSocre = jaguarScore + dogsScore;
         Random rng = new();
         bool hasSignal = rng.Next(0, 2) == 1;
         float rngFactor = rng.Next(0, 10) / 10f;
         
         stateSocre += hasSignal ? -rngFactor : rngFactor;
-        
         return stateSocre;
     }
     
