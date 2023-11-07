@@ -31,19 +31,12 @@ public class Game
     public event OnMoveEventHandler? OnMove;
     public delegate void OnRoundEndedEventHandler(object sender, RoundEndedEventArgs e);
     public event OnRoundEndedEventHandler? OnRoundEnded;
-    public delegate void OnStartRoundEventHandler(object sender, StartRoundEventArgs e);
-    public event OnStartRoundEventHandler OnStartRound;
     
     public Winner? Start()
     {
         Winner? winner;
         while (!board.IsGameOver(out winner))
         {
-            OnStartRound.Invoke(this, new()
-            {
-                jaguarMoves = board.GetPossibleMovesToJaguar(),
-                dogsMoves = board.GetPossibleMovesToDogs()
-            });
             Board boardClone = (Board)board.Clone();
             float maxPlayerScore = MaxMove(ref boardClone);
             
@@ -94,7 +87,7 @@ public class Game
             }
             return score;
         }
-        //Minimize the dogs' score
+        //Minimize the dogs's score
         else
         {
             float score = float.MaxValue;
@@ -127,9 +120,15 @@ public class Game
         OnMove?.Invoke(this, new()
         {
             move = maxPlayerMove,
-            player = jaguar,
+            lastPlayerToMove = jaguar,
             moveScore = maxPlayerScore,
-            boardAfterMove = (Board)boardRoundClone.Clone()
+            boardAfterMove = (Board)boardRoundClone.Clone(),
+            currentBoardMoveSet = new()
+            {
+                jaguarCurrentPoss = board.jagPoss,
+                jaguarMoves = board.GetPossibleMovesToJaguar(),
+                dogsMoves = board.GetPossibleMovesToDogs()
+            }
         });
         
         return maxPlayerScore;
@@ -145,9 +144,15 @@ public class Game
         OnMove?.Invoke(this, new()
         {
             move = minPlayerMove,
-            player = dogs,
+            lastPlayerToMove = dogs,
             moveScore = minPlayerScore,
-            boardAfterMove = (Board)boardRoundClone.Clone()
+            boardAfterMove = (Board)boardRoundClone.Clone(),
+            currentBoardMoveSet = new()
+            {
+                jaguarCurrentPoss = board.jagPoss,
+                jaguarMoves = board.GetPossibleMovesToJaguar(),
+                dogsMoves = board.GetPossibleMovesToDogs()
+            }
         });
         
         return minPlayerScore;

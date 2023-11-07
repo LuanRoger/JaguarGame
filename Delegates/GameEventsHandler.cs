@@ -9,6 +9,9 @@ public class GameEventsHandler
 {
     private readonly LiveDisplayContext _displayContext;
     private readonly Layout _layout;
+    
+    private const string MOVE_TEXT_FORMAT = "{0} foi para {1} (Pontuação: {2})";
+    private const string POSSIBLE_MOVE_TEXT_FORMAT = "{0} [bold {1}]{2} --move-> {3}[/]";
 
     public GameEventsHandler(LiveDisplayContext displayContext, Layout layout)
     {
@@ -18,27 +21,42 @@ public class GameEventsHandler
 
     public void UpdateEventsOnMove(object sender, MoveEventArgs eventArgs)
     {
-        const string moveTextFormat = "{0} foi para {1} ({2})";
         AdugoBoardRenderer boardRenderer = new(5, 5);
         _layout["Eventos"].Update(new Panel(
-                new Markup(string.Format(moveTextFormat, 
-                    eventArgs.player.name, eventArgs.move.newPoss.id, eventArgs.moveScore)))
+                Align.Right(new Markup(string.Format(MOVE_TEXT_FORMAT, 
+                    eventArgs.lastPlayerToMove.name, eventArgs.move.newPoss.id, eventArgs.moveScore)
+                )))
             .Header("Eventos"));
+        
         _layout["CurrentGame"].Update(
             new Panel(
                 new Align(
                     boardRenderer.Render(eventArgs.boardAfterMove),
                     HorizontalAlignment.Center, VerticalAlignment.Middle))
-                .Expand());
-        _displayContext.Refresh();
-    }
-    
-    public void UpdateEventsOnStartRound(object sender, StartRoundEventArgs eventArgs)
-    {
-        IEnumerable<IRenderable> jaguarMovesRender = eventArgs.jaguarMoves
-            .Select(move => new Markup($"Jaguar [bold]-> {move.newPoss.id}[/]"));
+                .Header("Visualização")
+                .Expand()
+            );
+        
+        IEnumerable<IRenderable> jaguarMovesRender = eventArgs.currentBoardMoveSet
+            .jaguarMoves.Select(move =>
+            {
+                string movementMessage = string.Format(POSSIBLE_MOVE_TEXT_FORMAT, 
+                    "Jaguar", move.isFatal ? "red" : "green",
+                    eventArgs.currentBoardMoveSet.jaguarCurrentPoss.id, move.newPoss.id);
+                return new Markup(movementMessage);
+            });
+        IEnumerable<IRenderable> dogsMovesRender = eventArgs.currentBoardMoveSet
+            .dogsMoves.Select(move =>
+            {
+                string movementMessage = string.Format(POSSIBLE_MOVE_TEXT_FORMAT, 
+                    "Cachorro", "blue", move.dogIndex, move.newPoss.id);
+                return new Markup(movementMessage);
+            });
         _layout["PossibleMoves"].Update(new Panel(
-                new Rows(jaguarMovesRender))
+                new Columns(
+                    new Rows(jaguarMovesRender),
+                    new Rows(dogsMovesRender)
+                ))
             .Header("Movimentos possiveis")
             .Expand()
         );
@@ -48,9 +66,6 @@ public class GameEventsHandler
     
     public void UpdateRoundInfos(object sender, RoundEndedEventArgs eventArgs)
     {
-        Style ruleStyle = new Style()
-            .Foreground(Color.Gold1);
-            
         _layout["Data"].Update(
             new Panel(
                     new Rows(
@@ -60,22 +75,23 @@ public class GameEventsHandler
                             .AddItem("Cachorro vivos", eventArgs.dogsAliveCount, Color.LightSalmon3_1)
                             .WithMaxValue(30)
                             .RightAlignLabel(),
-                        new Markup($"Posição da onça: {eventArgs.jagPoss.id}"),
-                        new Rule("[bold yellow]Relação de movimento[/]")
-                            .RuleStyle(ruleStyle)
-                            .Centered(),
-                        new BreakdownChart()
-                            .AddItem("Jaguar", eventArgs.boardEvaluation.jaguarChangeToWin, Color.Silver)
-                            .AddItem("Dogs", eventArgs.boardEvaluation.dogsChangeToWin, Color.Gold1)
-                            .ShowPercentage()
-                            .UseValueFormatter(d =>
-                            {
-                                double percentage = d * 100;
-                                return $"{percentage:0.00}%";
-                            })
+                        new Markup($"Posição da onça: {eventArgs.jagPoss.id}")
                     ))
                 .Header("Informações do ultimo round")
                 .Expand()
+        );
+        _layout["MovementRelation"].Update(new Panel(
+            new BreakdownChart()
+                .AddItem("Jaguar", eventArgs.boardEvaluation.jaguarChangeToWin, Color.Silver)
+                .AddItem("Dogs", eventArgs.boardEvaluation.dogsChangeToWin, Color.Gold1)
+                .ShowPercentage()
+                .UseValueFormatter(d =>
+                {
+                    double percentage = d * 100;
+                    return $"{percentage:0.00}%";
+                })
+            )
+            .Header("Relação de movimento")
         );
     }
 }

@@ -18,7 +18,8 @@ public class AdugoBoardRenderer : IBoardRenderer<Table>
     public Table Render(Board board)
     {
         Table table = new Table()
-            .Border(TableBorder.MinimalHeavyHead)
+            .BorderStyle(new(decoration: Decoration.Bold))
+            .Border(TableBorder.Heavy)
             .Centered();
         
         for (int column = 1; column < boardDimensionX + 1; column++)
