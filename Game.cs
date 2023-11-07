@@ -11,7 +11,7 @@ public class Game
     private Player jaguar { get; }
     private Player dogs { get; }
     private Board board { get; set; }
-    private int round { get; set; }
+    private GameState gameState { get; }
     
     private int maxDepth { get; }
 
@@ -22,19 +22,28 @@ public class Game
         this.jaguar = jaguar;
         this.dogs = dogs;
         this.maxDepth = maxDepth;
+        
         board = new(boardDefinition);
+        gameState = new();
     }
     
     public delegate void OnMoveEventHandler(object sender, MoveEventArgs e);
     public event OnMoveEventHandler? OnMove;
     public delegate void OnRoundEndedEventHandler(object sender, RoundEndedEventArgs e);
     public event OnRoundEndedEventHandler? OnRoundEnded;
+    public delegate void OnStartRoundEventHandler(object sender, StartRoundEventArgs e);
+    public event OnStartRoundEventHandler OnStartRound;
     
     public Winner? Start()
     {
         Winner? winner;
         while (!board.IsGameOver(out winner))
         {
+            OnStartRound.Invoke(this, new()
+            {
+                jaguarMoves = board.GetPossibleMovesToJaguar(),
+                dogsMoves = board.GetPossibleMovesToDogs()
+            });
             Board boardClone = (Board)board.Clone();
             float maxPlayerScore = MaxMove(ref boardClone);
             
@@ -42,18 +51,19 @@ public class Game
                 break;
             float minPlayerScore = MinMove(ref boardClone);
             
-            round++;
+            gameState.round++;
             board = boardClone;
             OnRoundEnded?.Invoke(this, new()
             {
-                round = round,
+                round = gameState.round,
+                jagPoss = board.jagPoss,
+                dogsAliveCount = board.dogsPoss.Count,
+                movesCount = gameState.movementsCount,
                 boardEvaluation = new()
                 {
                     jaguarChangeToWin = Math.Abs(Math.Abs(maxPlayerScore) - Math.Abs(minPlayerScore)) / Math.Abs(minPlayerScore),
                     dogsChangeToWin = Math.Abs(Math.Abs(minPlayerScore) - Math.Abs(maxPlayerScore)) / Math.Abs(maxPlayerScore),
                 },
-                jagPoss = board.jagPoss,
-                dogsAliveCount = board.dogsPoss.Count
             });
         }
         
@@ -113,6 +123,7 @@ public class Game
         if(maxPlayerMove is null)
             return default;
         boardRoundClone.Move(maxPlayerMove);
+        gameState.movementsCount++;
         OnMove?.Invoke(this, new()
         {
             move = maxPlayerMove,
@@ -130,6 +141,7 @@ public class Game
         if(minPlayerMove is null)
             return default;
         boardRoundClone.Move(minPlayerMove);
+        gameState.movementsCount++;
         OnMove?.Invoke(this, new()
         {
             move = minPlayerMove,

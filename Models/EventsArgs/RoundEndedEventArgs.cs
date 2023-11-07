@@ -6,6 +6,8 @@ public class RoundEndedEventArgs : EventArgs
     public BoardEvaluationData boardEvaluation { get; init; }
     public PlaceRef jagPoss { get; init; }
     public int dogsAliveCount { get; init; }
+    public int movesCount { get; init; }
+    
     public struct BoardEvaluationData
     {
         public float jaguarChangeToWin { get; init; }
