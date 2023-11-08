@@ -1,6 +1,6 @@
 # MiniMax on Adugo
+![Demo](https://github.com/LuanRoger/JaguarGame/blob/main/images/DemoTimelapse.gif)
 Implementação do algoritimo competitovo MiniMax com poda Alpha-Beta para jogar Adugo (Jogo da onça).
-
 Este implementação foi feito como trabalho da disciplina de Inteligência Artificial (IA).
 
 ## Tech stack
